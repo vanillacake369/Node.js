@@ -11,6 +11,15 @@ app.set('port', process.env.PORT || 3000);
 app.use(morgan('dev'));
 app.use(cookieParser());
 
+app.use(express.json());
+// form 파싱할 때 쿼리스트링 파싱 : ture이면 qs,false이면 querystring
+app.use(express.urlencoded({extended:true}));
+
+app.get('/',(req,res,next)=>{
+    var name = req.body.name;
+    res.send(name);
+})
+
 app.get('/',(req,res,next)=>{
     req.cookies;
     req.signedCookies;
