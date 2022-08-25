@@ -2,18 +2,29 @@ const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
 // create app
 const app = express();
 // config app setting(port ...)
 app.set('port', process.env.PORT || 3000);
 
-// use morgan module
+// 자주 쓰는 모듈 쓰기
 app.use(morgan('dev'));
 app.use(cookieParser());
-
 app.use(express.json());
-// form 파싱할 때 쿼리스트링 파싱 : ture이면 qs,false이면 querystring
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({extended:true})); // form 파싱할 때 쿼리스트링 파싱 : ture이면 qs,false이면 querystring
+app.use('/',express.static(path.join(__dirname,'public'))); // 정적파일 내부 데이터 접근 시, 요청 주소에 public 기입 없이 바로 접근 가능
+app.use(session({
+    resave:false,
+    saveUninitialized:false,
+    secret:process.env.COOKIE_SECRET,
+    cookie:{
+        httpOnly:true,
+        secure:false,
+    },
+    name:'session-cookie',
+}));
+
 
 app.get('/',(req,res,next)=>{
     var name = req.body.name;

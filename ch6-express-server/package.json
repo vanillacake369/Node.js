@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "nodemon app"
+    "start": "nodemon app.js"
   },
   "devDependencies": {
     "nodemon": "^2.0.19"
