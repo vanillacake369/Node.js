@@ -4,6 +4,11 @@ const morgan = require('morgan');
 const nunjucks = require('nunjucks');
 
 const { sequelize } = require('./models');
+const indexRouter = require('./routes');
+//require 시 이름 생략 가능. 아래 참조
+//https://www.notion.so/vanillacake369/MySQL-Node-js-5ba5b318d32f4a85bf9cc452e63c1ab9#79c08d2f14974b7c99738472e67dffa8
+const usersRouter = require('./routes/users');
+const commentsRouter = require('./routes/comments');
 
 const app = express();
 app.set('port', process.env.PORT || 3001);
@@ -25,6 +30,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+app.use('/comments', commentsRouter);
+
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
     error.status = 404;
@@ -36,7 +45,7 @@ app.use((err, req, res, next) => {
     res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
     res.status(err.status || 500);
     res.render('error');
-})
+});
 
 app.listen(app.get('port'), () => {
     console.log(app.get('port'), '번 포트에서 대기 중');
