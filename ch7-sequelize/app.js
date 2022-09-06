@@ -5,7 +5,7 @@ const nunjucks = require('nunjucks');
 
 const { sequelize } = require('./models');
 const indexRouter = require('./routes');
-//require 시 이름 생략 가능. 아래 참조
+//index는 require 시 이름 생략 가능. 아래 참조
 //https://www.notion.so/vanillacake369/MySQL-Node-js-5ba5b318d32f4a85bf9cc452e63c1ab9#79c08d2f14974b7c99738472e67dffa8
 const usersRouter = require('./routes/users');
 const commentsRouter = require('./routes/comments');
