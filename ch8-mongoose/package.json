@@ -1,0 +1,14 @@
+{
+  "name": "ch8-mongoose",
+  "version": "1.0.0",
+  "description": "몽구스를 배우자",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app"
+  },
+  "author": "jihoon",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
