@@ -1,6 +1,4 @@
 const Sequelize = require('sequelize');
-const { SELECT } = require('sequelize/types/query-types');
-
 module.exports = class Post extends Sequelize.Model {
     static init(sequelize) {
         return super.init({
