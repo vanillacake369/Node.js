@@ -5,23 +5,24 @@ const passport = require('../../passport');
 
 const router = express.Router();
 
+/**
+        * 그래 select문으로 user를 쿼리해보고 없으면 쿼리스트링error에 exist를 던지는 건 알겠는데
+        * ***error 쿼리스트링을 파싱해서 error 핸들링하는 라우터는 어디에 있냐??***
+        * => 프론트에서 리다이렉트 되어진 url을 받을 때 error에 대한 쿼리스트링 있을 시 처리하게끔 만듬!
+           * views/join.html
+           * <script>
+               window.onload = () => {
+                   if (new URL(location.href).searchParams.get('error')) {
+                       alert('이미 존재하는 이메일입니다.');
+                   }
+               };
+           </script>
+        */
+
 router.post('/join', isNotLoggedIn, async (req, res, next) => {
     const { email, nick, password } = req.body;
     try {
         const exUser = await User.findOne({ where: { email } });
-        /**
-         * 그래 select문으로 user를 쿼리해보고 없으면 쿼리스트링error에 exist를 던지는 건 알겠는데
-         * ***error 쿼리스트링을 파싱해서 error 핸들링하는 라우터는 어디에 있냐??***
-         * => 프론트에서 리다이렉트 되어진 url을 받을 때 error에 대한 쿼리스트링 있을 시 처리하게끔 만듬!
-            * views/join.html
-            * <script>
-                window.onload = () => {
-                    if (new URL(location.href).searchParams.get('error')) {
-                        alert('이미 존재하는 이메일입니다.');
-                    }
-                };
-            </script>
-         */
         if (exUser) {
             return res.redirect('/join?error=exist');
         }
@@ -38,7 +39,7 @@ router.post('/join', isNotLoggedIn, async (req, res, next) => {
     }
 });
 
-router.post('/login', (req, res, next) => {
+router.post('/login', isNotLoggedIn, (req, res, next) => {
     passport.authenticate('local', (authError, user, info) => {
         // authError : done()의 첫 인자인 서버에러
         // user : done()의 두 번째 인자인 로그인이 성공한 경우
