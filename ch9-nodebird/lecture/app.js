@@ -12,6 +12,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 // set homepage router
 const pageRouter = require('./routes/page');
+const authRouter = require('./routes/auth');
+const { sequelize } = require('./models');
 
 // start & set express 
 const app = express();
@@ -24,6 +26,21 @@ nunjucks.configure('views', {
     express: app,
     watch: true,
 });
+/** 
+ * force : true  
+ * 모델 파일들을 수정 시, 테이블을 모두 다 지웠다가 다시 생성 ==> 기존 데이터 다 날림
+ * alter : true
+ * 모델 파일 수정 시에도 기존 값들 살아있음 ==> 대신 기존 데이터들이 칼럼과 일치하지 않는 경우가 존재함
+ * force : false 
+ * 모델 파일들을 수정 시에도 db 리로드 되는 일 없도록 함
+*/
+sequelize.sync({ force: false })
+    .then(() => {
+        console.log('데이터베이스 연결 성공');
+    })
+    .catch((err) => {
+        console.error(err);
+    });
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -44,6 +61,8 @@ app.use(session({
 
 // link '/'request to pageRouter 변수
 app.use('/', pageRouter);
+// link '/auth' request to authRouter 변수
+app.use('/auth', authRouter);
 
 // 요청에 대해 등록된 라우터 없는 경우의 에러 세팅 : 404
 // 에러처리 미들웨어는 next 반드시 넣어줘야함
