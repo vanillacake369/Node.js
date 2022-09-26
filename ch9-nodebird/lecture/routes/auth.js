@@ -1,25 +1,19 @@
 const express = require('express');
-const User = require('../models/user');
+const passport = require('passport');
 const bcrypt = require('bcrypt');
-const passport = require('../../passport');
+const User = require('../models/user');
 
 const router = express.Router();
 
-/**
-        * 그래 select문으로 user를 쿼리해보고 없으면 쿼리스트링error에 exist를 던지는 건 알겠는데
-        * ***error 쿼리스트링을 파싱해서 error 핸들링하는 라우터는 어디에 있냐??***
-        * => 프론트에서 리다이렉트 되어진 url을 받을 때 error에 대한 쿼리스트링 있을 시 처리하게끔 만듬!
-           * views/join.html
-           * <script>
-               window.onload = () => {
-                   if (new URL(location.href).searchParams.get('error')) {
-                       alert('이미 존재하는 이메일입니다.');
-                   }
-               };
-           </script>
-        */
-
-router.post('/join', isNotLoggedIn, async (req, res, next) => {
+/** router.post('/join',...)
+ * 1. req.body로 넘어온 속성이 email,nick,password 인 값 가져오기
+ * 2. email값을 통해 db에서 user 찾기
+ * 3. user가 있다면 exist담은 error변수를 쿼리스트링으로 리다이렉트
+ * 4. 없다면 await bcrypt.hash(password, 12); 를 통해 암호화된 비번 생성
+ * 5. email,nick,암호화된 비밀번호 를 통해 user 생성
+ * 6. /로 리다이렉트
+ */
+router.post('/join', async (req, res, next) => {
     const { email, nick, password } = req.body;
     try {
         const exUser = await User.findOne({ where: { email } });
@@ -39,19 +33,25 @@ router.post('/join', isNotLoggedIn, async (req, res, next) => {
     }
 });
 
+/** router.post('/login',...)
+ * 1. passport.authenticate('local')을 통해 전략코드 실행 <= module.exports에서 './localStrategy'이 된 객체를 생성해주면 됨
+ * // 전략코드에서는 db를 통해 로컬 유저 확인, 비번 확인 등의 처리 후 done()으로서 결과 반환
+ * 2. 전략코드의 결과값 중
+ *      - 서버 에러가 있다면 에러 처리
+ *      - user가 존재하지 않다면 에러 처리
+ * 3. 전략코드가 성공적이었다면 req.login()호출
+ *      - 호출 결과값에 에러 존재 시, 에러 처리
+ *      - 에러 없다면 리다이렉트
+ */
 router.post('/login', isNotLoggedIn, (req, res, next) => {
     passport.authenticate('local', (authError, user, info) => {
-        // authError : done()의 첫 인자인 서버에러
-        // user : done()의 두 번째 인자인 로그인이 성공한 경우
-        // info : done()의 세 번째 인자인 로그인 실패 시 메세지
         if (authError) {
             console.error(authError);
             return next(authError);
         }
         if (!user) {
-            return res.redirect('/?loginError=${info.message}');
+            return res.redirect(`/?loginError=${info.message}`);
         }
-        // req.login()하는 순간 passport/index.js 실행 : seriallizeUser() 호출
         return req.login(user, (loginError) => {
             if (loginError) {
                 console.error(loginError);
@@ -59,11 +59,5 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
             }
             return res.redirect('/');
         });
-    })(req, res, next); //미들웨어 내 미들웨어에는 (req,res,next)를 붙임!!
+    })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
-
-router.get('/logout', isLoggedIn, (req, res) => {
-    req.logout(); // 세션-쿠키를 서버에서 지워버림
-    req.session.destroy(); // 세션 자체를 destroy
-    res.redirect('/');  // 다시 홈페이지로
-})

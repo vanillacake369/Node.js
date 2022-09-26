@@ -7,10 +7,14 @@ const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
 
-// set environment variable
-// process.env 객체를 아래에서 쓰이기 때문에 dotenv.config()는 최대한 위에서 선행으로 호출해주는 게 좋음
+/**
+ * set environment variable
+ * process.env 객체를 아래에서 쓰이기 때문에 
+ * dotenv.config()는 최대한 위에서 선행으로 호출해주는 게 좋음
+ */
 dotenv.config();
-// set homepage router
+
+// get routers
 const pageRouter = require('./routes/page');
 const authRouter = require('./routes/auth');
 const { sequelize } = require('./models');
@@ -59,9 +63,8 @@ app.use(session({
     },
 }));
 
-// link '/'request to pageRouter 변수
+// link request to Routers
 app.use('/', pageRouter);
-// link '/auth' request to authRouter 변수
 app.use('/auth', authRouter);
 
 // 요청에 대해 등록된 라우터 없는 경우의 에러 세팅 : 404
