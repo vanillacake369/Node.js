@@ -2,6 +2,7 @@ const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const { isLoggedIn, isNotLoggedIn } = require('../routes/middleware');
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ const router = express.Router();
  * 5. email,nick,암호화된 비밀번호 를 통해 user 생성
  * 6. /로 리다이렉트
  */
-router.post('/join', async (req, res, next) => {
+router.post('/join', isNotLoggedIn, async (req, res, next) => {
     const { email, nick, password } = req.body;
     try {
         const exUser = await User.findOne({ where: { email } });
@@ -60,4 +61,10 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
             return res.redirect('/');
         });
     })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
+});
+
+router.get('/logout', isLoggedIn, (req, res) => {
+    req.logout();
+    req.session.destroy();
+    res.redirect('/');
 });

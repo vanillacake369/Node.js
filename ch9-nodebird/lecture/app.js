@@ -6,6 +6,7 @@ const path = require('path');
 const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
+const passport = require('passport');
 
 /**
  * set environment variable
@@ -62,6 +63,13 @@ app.use(session({
         secure: false,
     },
 }));
+/** passport.initialize()&session()
+ * express의 session 설정 이후 그 session을 사용하여 passport의 session을 저장
+ * 아래와 같이 두 함수를 정의해주면 로그인 이후부터 다음 요청 시, passport.deserializeUser()이 실행됨
+ */
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 // link request to Routers
 app.use('/', pageRouter);
