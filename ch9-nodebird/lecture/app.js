@@ -1,4 +1,3 @@
-// import modules
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
@@ -8,37 +7,20 @@ const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
 const passport = require('passport');
 
-/**
- * set environment variable
- * process.env 객체를 아래에서 쓰이기 때문에 
- * dotenv.config()는 최대한 위에서 선행으로 호출해주는 게 좋음
- */
 dotenv.config();
-
-// get routers
 const pageRouter = require('./routes/page');
 const authRouter = require('./routes/auth');
 const { sequelize } = require('./models');
+const passportConfig = require('./passport');
 
-// start & set express 
 const app = express();
-// process.env.PORT가 없기 때문에 OR연산자를 통해 8001 포트를 사용
-// 나중에 배포 시, PORT를 지정해줄 것임
+passportConfig(); // 패스포트 설정
 app.set('port', process.env.PORT || 8001);
 app.set('view engine', 'html');
-// template engine conf : 1.views의 경로 2.app객체연결 3.html파일변경때마다템플릿엔진reload
 nunjucks.configure('views', {
     express: app,
     watch: true,
 });
-/** 
- * force : true  
- * 모델 파일들을 수정 시, 테이블을 모두 다 지웠다가 다시 생성 ==> 기존 데이터 다 날림
- * alter : true
- * 모델 파일 수정 시에도 기존 값들 살아있음 ==> 대신 기존 데이터들이 칼럼과 일치하지 않는 경우가 존재함
- * force : false 
- * 모델 파일들을 수정 시에도 db 리로드 되는 일 없도록 함
-*/
 sequelize.sync({ force: false })
     .then(() => {
         console.log('데이터베이스 연결 성공');
@@ -51,9 +33,7 @@ app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// express에 process.env내장객체로 암호화된 쿠키 사용하기
 app.use(cookieParser(process.env.COOKIE_SECRET));
-//
 app.use(session({
     resave: false,
     saveUninitialized: false,
@@ -63,38 +43,25 @@ app.use(session({
         secure: false,
     },
 }));
-/** passport.initialize()&session()
- * express의 session 설정 이후 그 session을 사용하여 passport의 session을 저장
- * 아래와 같이 두 함수를 정의해주면 로그인 이후부터 다음 요청 시, passport.deserializeUser()이 실행됨
- */
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-// link request to Routers
 app.use('/', pageRouter);
 app.use('/auth', authRouter);
 
-// 요청에 대해 등록된 라우터 없는 경우의 에러 세팅 : 404
-// 에러처리 미들웨어는 next 반드시 넣어줘야함
 app.use((req, res, next) => {
-    // req.method : get이냐,post냐 등등
-    const error = new Error(`${req.method}${req.url}라우터가 없습니다.`);
+    const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
     error.status = 404;
     next(error);
 });
-// 에러처리 미들웨어 
-// 템플릿 엔진의 변수(res.locals)에 에러상태코드 넘김
-// production 서버가 아닌 경우의 에러 : 500
+
 app.use((err, req, res, next) => {
     res.locals.message = err.message;
-    // process.env.NODE_ENV가 개발모드(dev)일 때는 err 표시, 배포(production)일 때는 빈 객체를 넘겨 에러내역을 안 보여주게함
-    res.locals.error = (process.env.NODE_ENV !== 'production') ? err : {};
+    res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
     res.status(err.status || 500);
     res.render('error');
 });
 
-// port에서 대기
 app.listen(app.get('port'), () => {
-    console.log(app.get('port'), '번 포트에서 대기 중');
-})
+    console.log(app.get('port'), '번 포트에서 대기중');
+});

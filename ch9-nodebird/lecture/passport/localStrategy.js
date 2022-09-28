@@ -14,7 +14,7 @@ const User = require('../models/user');
  * done()이 호출되면 auth.js로 돌아감
  */
 module.exports = () => {
-    passport.user(new LocalStrategy({
+    passport.use(new LocalStrategy({
         usernameField: 'email', // req.body.email
         passwordField: 'password', // req.body.password
     }, async (email, password, done) => { // usernameFieldm,passwordField,done()이 인수값으로 들어감
