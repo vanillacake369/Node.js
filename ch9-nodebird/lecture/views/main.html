@@ -53,8 +53,8 @@
             axios.post('/post/img', formData)
                 .then((res) => {
                     document.getElementById('img-url').value = res.data.url;
-                    document.getElementById('img-preview').src = res.data.url;
-                    document.getElementById('img-preview').style.display = 'inline';
+                    document.getElementById('img-preview').src = res.data.url; // error
+                    document.getElementById('img-preview').style.display = 'inline'; // error
                 })
                 .catch((err) => {
                     console.error(err);
