@@ -6,11 +6,11 @@ const Post = require('./post');
 const Hashtag = require('./hashtag');
 
 const db = {};
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const sequelize = new Sequelize(
+  config.database, config.username, config.password, config,
+);
 
-db.sequelize = sequelize; // new Sequelize(config.database, config.username, config.password, config);
-db.Sequelize = Sequelize; // require('sequelize');
-
+db.sequelize = sequelize;
 db.User = User;
 db.Post = Post;
 db.Hashtag = Hashtag;
@@ -18,5 +18,9 @@ db.Hashtag = Hashtag;
 User.init(sequelize);
 Post.init(sequelize);
 Hashtag.init(sequelize);
+
+User.associate(db);
+Post.associate(db);
+Hashtag.associate(db);
 
 module.exports = db;
