@@ -43,6 +43,24 @@ router.post('/', isLoggedIn, upload.none(), async (req, res, next) => { // body 
             img: req.body.url,
             UserId: req.user.id,
         });
+        const hashtags = req.body.content.match(/#[^\s#]*/g); // 정규표현식 : ("문자열").match(/정규표현식/플래그)
+        // [#노드, #익스프레스]
+        // [노드,익스프레스]
+        // [findOrCreate(노드),findOrCreate(익스프레스)]
+        // Promise이므로 Promise.all을 사용하여 시퀄라이즈 쿼리 실행 => 쿼리결과값을 이차원 배열로서 반환
+        // find했으면 false, create이면 true
+        // [[Hashtag객체1,true],[Hashtag객체2,true]]
+        // 시퀄라이즈 문법 중 add인스턴스 메서드의 파라미터로서... 1.컬럼의 id 2.쿼리결과객체
+        if(hashtags){
+            const result = await Promise.all(
+                hashtags.map(tag=>{
+                    return Hashtag.findOrCreate({
+                        where:{title:tag.slice(1).toLowerCase()},
+                    })
+                }),
+            );
+            await post.addHashtags(result.map(r=>r[0]));
+        }
         res.redirect('/');
     } catch (error) {
         console.error(error);

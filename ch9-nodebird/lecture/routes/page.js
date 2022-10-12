@@ -39,6 +39,8 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+
+// GET /hashtag?hashtag=노드는말이야
 router.get('/hashtag', async (req, res, next) => {
   const query = req.query.hashtag;
   if (!query) {

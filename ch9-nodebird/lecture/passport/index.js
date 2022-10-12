@@ -8,6 +8,7 @@ module.exports = () => {
     done(null, user.id);
   });
 
+  // 프론트 단에 보낼 때 패스워드 및 개인정보는 최대한 보내지 않게 해야함. -> attributes에는 id와 nick만 추가
   passport.deserializeUser((id, done) => {
     User.findOne({
       where: { id },
